@@ -18,9 +18,6 @@ from sklearn.ensemble import RandomForestClassifier
 
 RANDOM_STATE = 42
 
-# ---------------------------
-# Utilidades de dados
-# ---------------------------
 def load_dataset(csv_path: Path) -> pd.DataFrame:
     df = pd.read_csv(csv_path, encoding="utf-8", engine="python")
     if df.columns[0].lower().startswith("unnamed") or df.columns[0] == "":
@@ -52,9 +49,7 @@ def prepare_xy(df: pd.DataFrame, target_col: str):
     y = le.fit_transform(y)
     return X.values, y, num_cols, le
 
-# ---------------------------
-# KMeans: cotovelo + silhueta
-# ---------------------------
+# KMeans com cotovelo e silhueta
 def k_diagnostics(X_scaled: np.ndarray, k_min=2, k_max=10):
     k_max = max(k_min + 1, min(k_max, len(X_scaled) - 1))
     ks, inertias, silhouettes = [], [], []
@@ -95,18 +90,14 @@ def plot_elbow_silhouette(ks, inertias, silhouettes, outdir: Path):
     plt.savefig(outdir / "silhueta_kmeans.png", dpi=130)
     plt.close()
 
-# ---------------------------
 # Feature de cluster
-# ---------------------------
 def cluster_distance_feature(Xtr_s, Xte_s, k: int):
     km = KMeans(n_clusters=k, random_state=RANDOM_STATE, n_init=10).fit(Xtr_s)
     dtr = km.transform(Xtr_s).min(axis=1).reshape(-1, 1)
     dte = km.transform(Xte_s).min(axis=1).reshape(-1, 1)
     return dtr, dte
 
-# ---------------------------
 # Modelos e avaliação
-# ---------------------------
 def svm_grid():
     model = SVC(probability=True, random_state=RANDOM_STATE)
     grid = [
@@ -133,7 +124,6 @@ def metrics(model, Xte, yte):
     prec = precision_score(yte, yp, average="macro", zero_division=0)
     rec = recall_score(yte, yp, average="macro", zero_division=0)
     f1 = f1_score(yte, yp, average="macro", zero_division=0)
-    # ROC-AUC macro OVR (multi classe)
     auc = np.nan
     try:
         if hasattr(model, "predict_proba"):
@@ -177,9 +167,7 @@ def bar_compare(metrics_table: dict, outdir: Path, title_prefix: str):
     plt.savefig(outdir / f"{title_prefix.lower().replace(' ', '_')}_auc.png", dpi=130)
     plt.close()
 
-# ---------------------------
 # Influência de k (SVM)
-# ---------------------------
 def scan_k_effect(k_values, Xtr_s, Xte_s, ytr, yte):
     recs = []
     base_svm, base_grid = svm_grid()
@@ -235,14 +223,12 @@ def print_guidelines(best_k: int, comp_metrics: dict, dfk: pd.DataFrame):
     print("- Se o ganho for pequeno, tente: (i) adicionar mais de uma distância (p.ex. top-2), "
           "(ii) usar one-hot dos clusters (assignment), (iii) ampliar a faixa de k.")
 
-# ---------------------------
 # MAIN
-# ---------------------------
 def main():
     base = Path(__file__).parent
-    data_path = base / "dataset.csv"# experimento_cluster_features.py
+    data_path = base / "dataset.csv"
 
-    outdir = base / "figs"
+    outdir = base / "figs2"
 
     print(f"Lendo: {data_path}")
     df = load_dataset(data_path)

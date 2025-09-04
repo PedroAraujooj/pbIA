@@ -1,0 +1,34 @@
+{
+  "SVM_base": {
+    "params": {
+      "C": 10,
+      "gamma": "auto",
+      "kernel": "rbf"
+    },
+    "cv_f1_macro": 0.27444333254287556
+  },
+  "SVM_plus": {
+    "params": {
+      "C": 10,
+      "gamma": "auto",
+      "kernel": "rbf"
+    },
+    "cv_f1_macro": 0.2750422463664006
+  },
+  "RF_base": {
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+    },
+    "cv_f1_macro": NaN
+  },
+  "RF_plus": {
+    "params": {
+      "max_depth": null,
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+    },
+    "cv_f1_macro": NaN
+  }
+}
