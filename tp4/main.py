@@ -62,7 +62,7 @@ def k_diagnostics(X_scaled: np.ndarray, k_min=2, k_max=10):
             silhouettes.append(silhouette_score(X_scaled, labs))
         else:
             silhouettes.append(np.nan)
-    # melhor k pela silhueta (se disponível)
+    # melhor k pela silhueta
     valid = [(k, s) for k, s in zip(ks, silhouettes) if not np.isnan(s)]
     best_k = max(valid, key=lambda t: t[1])[0] if valid else 3
     return ks, inertias, silhouettes, best_k
@@ -167,7 +167,7 @@ def bar_compare(metrics_table: dict, outdir: Path, title_prefix: str):
     plt.savefig(outdir / f"{title_prefix.lower().replace(' ', '_')}_auc.png", dpi=130)
     plt.close()
 
-# Influência de k (SVM)
+# Influência de k
 def scan_k_effect(k_values, Xtr_s, Xte_s, ytr, yte):
     recs = []
     base_svm, base_grid = svm_grid()
@@ -217,11 +217,6 @@ def print_guidelines(best_k: int, comp_metrics: dict, dfk: pd.DataFrame):
     print("\n=== Diretrizes práticas ===")
     print(f"- Escolha inicial: k={best_k} (pela silhueta); avalie k±1..2 (vide curvas salvas).")
     print(f"- A feature de cluster (distância ao centróide) {'tende a ajudar' if delta_med>0 else 'pode não ajudar'} (ΔF1 médio≈{delta_med:.4f}).")
-    print("- Sempre padronize antes de K-Means e SVM (StandardScaler).")
-    print("- SVM: teste kernels linear e RBF primeiro; ajuste C (e gamma no RBF).")
-    print("- Random Forest: ajuste max_depth e min_samples_leaf para controlar overfitting.")
-    print("- Se o ganho for pequeno, tente: (i) adicionar mais de uma distância (p.ex. top-2), "
-          "(ii) usar one-hot dos clusters (assignment), (iii) ampliar a faixa de k.")
 
 # MAIN
 def main():
@@ -276,7 +271,6 @@ def main():
     print("\n=== Comparação (Teste) ===")
     print(pd.DataFrame(comp).T.round(4))
 
-    # salvar params selecionados
     with open(outdir / "melhores_parametros.json", "w", encoding="utf-8") as f:
         json.dump({
             "SVM_base": {"params": p_base, "cv_f1_macro": cv_base},
@@ -285,15 +279,12 @@ def main():
             "RF_plus":  {"params": rp_plus, "cv_f1_macro": rcv_plus},
         }, f, ensure_ascii=False, indent=2)
 
-    # gráficos de comparação
     bar_compare(comp, outdir, "Comparação sem vs com feature de cluster")
 
-    # Influência de k no SVM (com feature)
     dfk = scan_k_effect(ks, Xtr_s, Xte_s, ytr, yte)
     dfk.to_csv(outdir / "influencia_k.csv", index=False)
     plot_k_effect(dfk, outdir)
 
-    # Diretrizes
     print_guidelines(best_k, comp, dfk)
 
 if __name__ == "__main__":
